@@ -20,9 +20,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.busschedule.databinding.FullScheduleFragmentBinding
+import com.example.busschedule.viewmodels.BusScheduleViewModel
+import com.example.busschedule.viewmodels.BusScheduleViewModelFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class FullScheduleFragment: Fragment() {
 
@@ -31,6 +38,14 @@ class FullScheduleFragment: Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var recyclerView: RecyclerView
+
+    // First, in FullScheduleFragment.kt, you need to get a reference to the view model.
+    private val viewModel: BusScheduleViewModel by activityViewModels {
+        BusScheduleViewModelFactory(
+            (activity?.application as BusScheduleApplication).database.scheduleDao()
+        )
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,10 +57,30 @@ class FullScheduleFragment: Fragment() {
         return view
     }
 
+    // Then in onViewCreated(), add the following code to set up the recycler view and assign its layout manager.
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         recyclerView = binding.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        // Then assign the adapter property. The action passed in will use the stopName to navigate
+    // the selected next screen so that the list of bus stops can be filtered.
+        val busStopAdapter = BusStopAdapter({
+            val action = FullScheduleFragmentDirections.actionFullScheduleFragmentToStopScheduleFragment(
+                stopName = it.stopName
+            )
+            view.findNavController().navigate(action)
+        })
+        recyclerView.adapter = busStopAdapter
+
+        // Finally, to update a list view, call submitList(), passing in the list of bus stops from the view model.
+        // submitList() is a call that accesses the database. To prevent the
+// call from potentially locking the UI, you should use a
+// coroutine scope to launch the function. Using GlobalScope is not
+// best practice, and in the next step we'll see how to improve this.
+        GlobalScope.launch(Dispatchers.IO) {
+            busStopAdapter.submitList(viewModel.fullSchedule())
+        }
+
     }
 
     override fun onDestroyView() {
