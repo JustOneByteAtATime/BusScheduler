@@ -22,7 +22,9 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.BusScheduler">
+        android:theme="@style/Theme.BusScheduler"
+        android:name="com.example.busschedule.BusScheduleApplication"
+        >
         <activity android:name="com.example.busschedule.MainActivity"
             android:exported="true">
             <intent-filter>
