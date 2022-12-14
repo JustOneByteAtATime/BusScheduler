@@ -13,6 +13,11 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
+
+<!-- Finally, to make sure that BusScheduleApplication class is used (instead of the default base class
+Application), you need to make a small change to the manifest. In AndroidMainifest.xml, set the
+android:name property to com.example.busschedule.BusScheduleApplication. -->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.busschedule">
 
